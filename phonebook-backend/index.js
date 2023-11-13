@@ -1,6 +1,8 @@
 
 const express = require('express');
 const app = express();
+const morgan = require("morgan");
+let body;
 
 app.use(express.json());
 
@@ -26,6 +28,12 @@ let persons = [
         "number": "39-23-6423122"
     }
 ];
+
+morgan.token('log', function(req, res){
+    return JSON.stringify(body);
+})
+
+app.use(morgan(":method :url :status :res[content-length] - :response-time ms :log"))
 
 // Displaying message
 app.get('/info', (request, response) => {
@@ -61,15 +69,14 @@ app.delete("/api/persons/:id", (request, response) => {
 
 // POST 
 app.post("/api/persons", (request, response) => {
-    const body = request.body;
+    body = request.body;
     const newId = Math.floor(Math.random() * 999);
     const exist = persons.some(x => x.name == body.name);
-
     if (!body.name || !body.number) {
         return response.status(400).json({
             error: "The number or name is missing"
         })
-    } else if (exist){
+    } else if (exist) {
         return response.status(400).json({
             error: `Cannot be two registers with the same name (${body.name})`
         })
@@ -79,9 +86,9 @@ app.post("/api/persons", (request, response) => {
             number: body.number,
             id: newId
         }
-    
+
         persons = persons.concat(person);
-        response.json(person);    
+        response.json(person);
     }
 
 
