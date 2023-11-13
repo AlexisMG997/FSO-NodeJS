@@ -44,7 +44,7 @@ app.get('/api/persons/', (request, response) => {
 app.get('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id);
     console.log(id);
-    const person = persons.find( person => person.id === id);
+    const person = persons.find(person => person.id === id);
     // Handle undefined results in find method
     if (person)
         response.json(person);
@@ -61,20 +61,32 @@ app.delete("/api/persons/:id", (request, response) => {
 
 // POST 
 app.post("/api/persons", (request, response) => {
-    let newId, match;
-
     const body = request.body;
+    const newId = Math.floor(Math.random() * 999);
+    const exist = persons.some(x => x.name == body.name);
 
-        newId = Math.floor(Math.random(999));
-        console.log(newId);
-    
-    if (!body.name || !body.number){
+    if (!body.name || !body.number) {
         return response.status(400).json({
-            error: "Values missing, fill all the fields"
+            error: "The number or name is missing"
         })
+    } else if (exist){
+        return response.status(400).json({
+            error: `Cannot be two registers with the same name (${body.name})`
+        })
+    } else {
+        const person = {
+            name: body.name,
+            number: body.number,
+            id: newId
+        }
+    
+        persons = persons.concat(person);
+        response.json(person);    
     }
 
+
 })
+
 
 const PORT = 3001;
 app.listen(PORT, () => {
